@@ -2,6 +2,8 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 import openjij as oj
+import neal
+import time
 
 # 問題設定
 N = 30
@@ -30,36 +32,54 @@ def calc_tts(tau, vaild, num_reads):
         tts = tau*(np.log(1-pR)/np.log(1-ps))
     return tts
 
+# サンプラー情報
+jij_sasampler_info = "openjij.sampler.sa_sampler.SASampler"
+dwave_neal_info = "neal.sampler.SimulatedAnnealingSampler"
+
 # アニーリング用パラメータ
-def annealing_param():
-    annealing_param = {} 
-    annealing_param["num_reads"] = 1000
-    annealing_param["beta_min"] = 0.1
-    annealing_param["beta_max"] = 10.0
+def annealing_param(sampler):
+    annealing_param = {}
+    annealing_param["num_reads"] = 100
     annealing_param["num_sweeps"] = 100
+    if jij_sasampler_info in str(sampler):
+        annealing_param["beta_min"] = 0.1
+        annealing_param["beta_max"] = 10.0     
+    elif dwave_neal_info in str(sampler):
+        annealing_param["beta_range"] = [0.1, 10.0]
+        
     return annealing_param
 
 # 実行
 def exe():
-
-    param = annealing_param()
     correct_state = create_correct_state()
+    sampler_list = [oj.SASampler(), neal.SimulatedAnnealingSampler()]
+    
+    for sampler in sampler_list:
+        print(sampler)
+        param = annealing_param(sampler)
+        chk_time = time.time()
+        response = sampler.sample_ising(h, J, **param)
+        annealing_time = time.time() - chk_time
+    
+        correct_answer = 0
+        if jij_sasampler_info in str(sampler):
+            tau = response.info['execution_time'] / 1000000
+            energies = response.energies
+            for e in energies:
+                if e <= correct_state:
+                    correct_answer+=1
+        elif dwave_neal_info in str(sampler):
+            tau = annealing_time
+            for s, e, n in response.data(["sample", "energy", "num_occurrences"]):
+                if e <= correct_state:
+                    correct_answer+=1
 
-    sampler = oj.SASampler()
-    response = sampler.sample_ising(h, J, **param)
-    tau = response.info['execution_time']
-    energies = response.energies
+        vaild = correct_answer / param["num_reads"]
+        tts = calc_tts(tau, vaild, param["num_reads"])
 
-    correct_answer = 0
-    for e in energies:
-        if e <= correct_state:
-            correct_answer+=1
-
-    vaild = correct_answer / param["num_reads"]
-    tts = calc_tts(tau, vaild, param["num_reads"])
-
-    print("calc_time      = ", tau, "[sec]", )
-    print("correct_answer = ", correct_answer, "/", param["num_reads"])
-    print("tts            = ", tts, "[sec]")
+        print("calc_time      = ", tau, "[sec]", )
+        print("correct_answer = ", correct_answer, "/", param["num_reads"])
+        print("tts            = ", tts, "[sec]")
+        print("")
 
 exe()
