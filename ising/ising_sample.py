@@ -5,19 +5,19 @@ import openjij as oj
 import neal
 import time
 
-# 問題設定
-N = 30
-h = {0: -10}
-J = {(i, i+1): 1 for i in range(N-1)}
+comp_flg = True # 比較モードフラグ
 
 # モデル・最適解
-def create_correct_state():
-
+def create_model():
+    
+    N = 30
+    h = {0: -10}
+    J = {(i, i+1): 1 for i in range(N-1)}
     correct_state = [(-1)**i for i in range(N)]
     bqm = oj.BinaryQuadraticModel.from_ising(h, J)
     minimum_energy = bqm.energy(correct_state)
 
-    return minimum_energy
+    return h, J, minimum_energy
 
 # TTS
 def calc_tts(tau, vaild, num_reads):
@@ -51,8 +51,11 @@ def annealing_param(sampler):
 
 # 実行
 def exe():
-    correct_state = create_correct_state()
-    sampler_list = [oj.SASampler(), neal.SimulatedAnnealingSampler()]
+    h, J, correct_state = create_model()
+    sampler_list = [neal.SimulatedAnnealingSampler()]
+    
+    if comp_flg:
+        sampler_list = [oj.SASampler(), neal.SimulatedAnnealingSampler()]
     
     for sampler in sampler_list:
         print(sampler)
