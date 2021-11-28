@@ -95,10 +95,12 @@ def exe():
             if jij_sasampler_info in str(sampler):
                 ps_list.append(ps)
                 tts_list.append(tts)
-            
+        
         print("calc_time      = ", tau, "[sec]", )
         print("correct_answer = ", correct_answer, "/", param["num_reads"])
         print("tts            = ", tts, "[sec]")
         print("")
+    print("correct_answer_list: ", ps_list)
+    print("tts_list: ", tts_list)
         
 exe()
