@@ -16,5 +16,5 @@ qubo, offset = model.to_qubo(feed_dict=feed_dict)
 
 # 作ったAPI
 sampler = client.TestHostSampler()
-result = sampler.sample(qubo, config='./api.conf', num_reads=1, num_sweeps=200)
+result = sampler.sample(qubo, config='./api.conf', num_reads=10, num_sweeps=2000)
 print(result)
