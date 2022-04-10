@@ -17,13 +17,11 @@ class TestHostSampler():
             f.write(str(qubo).encode('utf-8'))
         f.close()
 
-        # 設定ファイル読み込み
-        config = configparser.ConfigParser()
-        config.read('api.conf')
-        token = config['BASE']['token']
-        url = config['BASE']['endpoint']
-
         # 入力してリクエスト
+        configParser = configparser.ConfigParser()
+        configParser.read('./api.conf')
+        token = configParser['BASE']['token']
+        url = configParser['BASE']['endpoint']
         payload = {"num_reads": self.num_reads, "num_sweeps": self.num_sweeps}
         headers = {'Authorization': 'Bearer {}'.format(token)}
         res = requests.post(url, json=payload, headers=headers)

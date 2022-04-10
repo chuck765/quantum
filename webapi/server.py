@@ -17,7 +17,7 @@ auth = HTTPTokenAuth(scheme='Bearer')
 def verify_token(token):
 
     # トークンリストに含まれているかを判定。ない場合は401を返す
-    tokens = ["", "", ""]
+    tokens = ["test", "", ""]
     if token in tokens:
         return True
     abort(401)
